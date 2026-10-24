@@ -1,0 +1,934 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>불이 켜지는 키 스위치</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=STIX+Two+Text:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
+<script>try { const t = localStorage.getItem("netsci-theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<style>
+
+:root{
+  --paper:#F6F8FB; --grid:#E1E8F0; --ink:#1A2433; --muted:#5B6779; --panel:#FFFFFF; --line:#C8D2DE;
+  --cyan:#5DEBEE; --magenta:#E55ADC; --red:#DE3127; --blue:#2B46D4; --green:#18924A;
+  --copper:#C9773F;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#132039; --grid:#1B2B48; --ink:#E7EDF6; --muted:#9DAAC0; --panel:#192946; --line:#2D4064;
+    --cyan:#47DDE1; --magenta:#F07AE8; --red:#FF5B4F; --blue:#93A6FF; --green:#4FD27F; --copper:#E39461;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#132039; --grid:#1B2B48; --ink:#E7EDF6; --muted:#9DAAC0; --panel:#192946; --line:#2D4064;
+  --cyan:#47DDE1; --magenta:#F07AE8; --red:#FF5B4F; --blue:#93A6FF; --green:#4FD27F; --copper:#E39461;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 64px)}
+body{
+  margin:0; color:var(--ink); background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:26px 26px;
+  font-family:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:17px; line-height:1.62; -webkit-font-smoothing:antialiased;
+}
+i,.m{font-style:italic}
+sub{font-size:.7em}
+a{color:var(--blue)}
+:focus-visible{outline:3px solid var(--magenta);outline-offset:2px;border-radius:3px}
+
+/* nav */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.bar-in{max-width:1080px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:18px}
+.toc{display:flex;gap:4px;overflow-x:auto;flex:1;scrollbar-width:none}
+.toc::-webkit-scrollbar{display:none}
+.toc a{white-space:nowrap;text-decoration:none;color:var(--muted);font-size:14px;padding:4px 9px;border-radius:6px}
+.toc a:hover{color:var(--ink);background:var(--grid)}
+.toc a span{color:var(--blue);font-weight:700;margin-right:4px}
+.langlink{flex:none;font-size:14px;padding:4px 12px;border:1.5px solid var(--ink);border-radius:8px;color:var(--ink);text-decoration:none}
+.langlink:hover{background:var(--ink);color:var(--paper)}
+
+/* hero */
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+.hero{padding:56px 0 28px}
+.credit{font-size:15px;color:var(--muted);margin:0 0 18px;max-width:60ch}
+.credit b{color:var(--ink);font-weight:500}
+h1{font-size:clamp(40px,7vw,78px);line-height:1.04;letter-spacing:-.02em;margin:0;font-weight:700;max-width:14ch}
+.hero p.sub{font-size:19px;max-width:56ch;margin:18px 0 0}
+.hero-wire{width:100%;height:auto;display:block;margin-top:34px}
+.scrawl{color:var(--blue);font-size:15px;font-weight:500;line-height:1.5;border-left:3px solid currentColor;padding:2px 0 2px 12px;max-width:52ch}
+
+/* sections */
+section{padding:56px 0 24px;border-top:1px dashed var(--line)}
+h2{font-size:clamp(26px,3.6vw,36px);line-height:1.15;margin:0 0 14px;letter-spacing:-.01em;display:flex;gap:14px;align-items:baseline}
+h2 .n{font-size:.62em;color:var(--blue);border:2px solid var(--blue);border-radius:50%;width:1.7em;height:1.7em;display:inline-grid;place-items:center;flex:none;transform:translateY(-.15em)}
+.prose{max-width:68ch}
+.prose p{margin:0 0 12px}
+.key{display:inline-flex;flex-wrap:wrap;gap:10px 34px;align-items:center;border:6px solid var(--cyan);border-radius:5px;padding:12px 22px;margin:8px 0 22px;font-size:19px;background:var(--panel)}
+.key span{white-space:nowrap}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.9em;line-height:1.15;margin:0 2px}
+.frac>span:first-child{border-bottom:1.5px solid currentColor;padding:0 3px}
+
+.sim{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(250px,1fr);gap:18px;background:var(--panel);border:1.5px solid var(--line);border-radius:12px;padding:18px}
+@media (max-width:820px){.sim{grid-template-columns:1fr}}
+.viz{min-width:0;display:flex;flex-direction:column;gap:12px}
+.viz svg,.viz canvas{width:100%;display:block}
+.controls{display:flex;flex-direction:column;gap:12px;min-width:0}
+.ctl label{display:flex;justify-content:space-between;gap:8px;font-size:15px}
+.ctl output{font-variant-numeric:tabular-nums;font-weight:500}
+input[type=range]{width:100%;accent-color:var(--blue);margin:4px 0 0}
+select{font:inherit;font-size:15px;width:100%;padding:6px 8px;border-radius:7px;border:1.5px solid var(--line);background:var(--paper);color:var(--ink)}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button,.btn{font:inherit;font-size:14px;padding:5px 11px;border-radius:7px;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer}
+.seg button[aria-pressed="true"]{border-color:var(--blue);background:var(--blue);color:var(--panel)}
+.check{display:flex;gap:8px;align-items:center;font-size:15px;cursor:pointer}
+.check input{accent-color:var(--blue);width:17px;height:17px}
+.lbl{font-size:15px;margin-bottom:4px;display:block}
+dl.read{display:grid;grid-template-columns:1fr auto;gap:5px 12px;margin:4px 0 0;font-size:15px;border-top:1px solid var(--line);padding-top:10px}
+dl.read dt{color:var(--muted)}
+dl.read dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
+.verdict{font-size:15px;padding:8px 12px;border-radius:8px;border-left:5px solid var(--magenta);background:color-mix(in srgb,var(--magenta) 10%,transparent)}
+.aside{margin-top:18px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:820px){.aside{grid-template-columns:1fr}}
+.boxed{border:1.5px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--panel);font-size:16px}
+.boxed h3{margin:0 0 6px;font-size:17px}
+
+.mag{color:var(--magenta)}
+.bars{display:flex;flex-direction:column;gap:7px;font-size:14px}
+.bar-row{display:grid;grid-template-columns:minmax(0,1fr) 72px;gap:8px;align-items:center}
+.bar-track{height:14px;background:var(--grid);border-radius:4px;overflow:hidden;position:relative}
+.bar-fill{height:100%;border-radius:4px;transition:width .15s}
+.bar-row .v{text-align:right;font-variant-numeric:tabular-nums}
+.bar-cap{grid-column:1/-1;color:var(--muted);margin-bottom:-4px}
+table.tbl{border-collapse:collapse;width:100%;font-size:15px;font-variant-numeric:tabular-nums}
+.tbl th,.tbl td{padding:5px 8px;border-bottom:1px solid var(--line);text-align:right}
+.tbl th:first-child,.tbl td:first-child{text-align:left}
+.tbl th{color:var(--muted);font-weight:500}
+.eq{font-size:16px;line-height:1.7}
+.eq .sum{font-weight:700}
+.small{font-size:14px;color:var(--muted)}
+footer{padding:40px 0 60px;border-top:1px dashed var(--line);margin-top:40px;color:var(--muted);font-size:15px}
+svg text{font-family:"IBM Plex Sans KR",system-ui,sans-serif;fill:var(--ink)}
+svg .wire{stroke:var(--ink);stroke-width:2.2;fill:none;stroke-linejoin:round}
+svg .flow{stroke:var(--red);stroke-width:5;fill:none;stroke-linecap:round;stroke-dasharray:0.1 15}
+svg .axis{stroke:var(--muted);stroke-width:1.2}
+svg .gridl{stroke:var(--grid);stroke-width:1}
+@media (prefers-reduced-motion:reduce){.bar-fill{transition:none}}
+
+
+button.theme-btn{position:fixed; z-index:20; top:calc(env(safe-area-inset-top, 0px) + 12px); right:calc(env(safe-area-inset-right, 0px) + 12px);
+  width:40px; height:40px; padding:0; border-radius:50%; display:grid; place-items:center; cursor:pointer;
+  background:var(--panel); color:var(--ink); border:1px solid var(--line); box-shadow:0 1px 4px rgba(0,0,0,.12)}
+button.theme-btn:hover{background:var(--panel); color:var(--ink); border-color:var(--ink)}
+button.theme-btn:focus-visible{outline:3px solid var(--blue); outline-offset:2px}
+.bar{padding-right:60px}
+button.theme-btn svg{width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+
+:root{--led:#47E3F0;--cap:#E2A36C;--silver:#B9C2CE;--leaf:#C9773F}
+:root[data-theme="dark"]{--cap:#C98852;--silver:#8D99AA}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--cap:#C98852;--silver:#8D99AA}}
+html[lang="ko"] body{word-break:keep-all}
+/* equations: a formal serif math face for variables, symbols, and sub/superscripts */
+:root{--math:"STIX Two Text","STIX Two Math","Cambria Math","Cambria","Times New Roman",serif}
+i:not(:empty),.mf,sub,sup{font-family:var(--math)}
+i:not(:empty){font-size:1.08em;letter-spacing:.01em}
+.mf{font-style:normal;font-size:1.08em}
+.key{font-family:var(--math);font-size:22px;gap:10px 40px}
+.key span{letter-spacing:.01em}
+.hero{padding:44px 0 10px}
+.photos{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:14px}
+.photos figure{margin:0;background:var(--panel);border:1.5px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
+.photos img{display:block;width:100%;height:230px;object-fit:cover}
+.photos figcaption{font-size:14px;color:var(--muted);padding:8px 11px 10px;line-height:1.45}
+.photos.hero-ph img{height:260px}
+.phhead{font-size:15px;color:var(--muted);margin:22px 0 0}
+.phhead b{color:var(--ink)}
+.press-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn.big{font-size:16px;padding:10px 22px;border-width:2px;border-color:var(--ink);font-weight:700;user-select:none;-webkit-user-select:none;touch-action:none}
+.btn.big[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.state{display:inline-flex;align-items:center;gap:6px;font-size:14px;padding:3px 10px;border-radius:999px;border:1.5px solid var(--line)}
+.state i{font-style:normal;width:9px;height:9px;border-radius:50%;background:var(--muted)}
+.state.on{border-color:var(--green)} .state.on i{background:var(--green)}
+#hero svg{touch-action:none;user-select:none;-webkit-user-select:none}
+.legendrow{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:14px;color:var(--muted)}
+.legendrow .sw{display:inline-block;width:18px;height:0;border-top:3px solid;vertical-align:4px;margin-right:6px}
+.legendrow .sw.d{border-top-style:dashed}
+.pinpick{display:grid;grid-template-columns:1fr;gap:8px 10px;align-items:center;font-size:15px}
+.ok{border-left-color:var(--green)!important;background:color-mix(in srgb,var(--green) 10%,transparent)!important}
+</style>
+</head>
+<body>
+<button id="themeBtn" class="theme-btn" type="button" aria-label=""></button>
+
+<nav class="bar" aria-label="Sections">
+  <div class="bar-in">
+    <div class="toc">
+      <a href="#s1"><span>1</span><x data-i18n="nav1"></x></a>
+      <a href="#s3"><span>2</span><x data-i18n="nav3"></x></a>
+      <a href="#s5"><span>3</span><x data-i18n="nav5"></x></a>
+      <a href="#s7"><span>4</span><x data-i18n="nav7"></x></a>
+      <a href="#s4"><span>5</span><x data-i18n="nav4"></x></a>
+    </div>
+    <a class="langlink" href="clicker-en.html" hreflang="en" lang="en">English</a>
+  </div>
+</nav>
+
+<header class="wrap hero">
+  <p class="credit" data-i18n="credit"></p>
+  <h1 data-i18n="title"></h1>
+  <p class="sub" data-i18n="subtitle"></p>
+  <div class="photos hero-ph">
+    <figure><img src="photos/souvenir.jpg" alt="" data-alt="phSouvAlt" loading="lazy"><figcaption data-i18n="phSouv"></figcaption></figure>
+    <figure><img src="photos/side-view.jpg" alt="" data-alt="phSideAlt" loading="lazy"><figcaption data-i18n="phSide"></figcaption></figure>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- 1 -->
+<section id="s1" style="border-top:0;padding-top:24px">
+  <h2><span class="n">1</span><span data-i18n="h1"></span></h2>
+  <div class="prose"><p data-i18n="p1"></p></div>
+  <div class="sim" id="hero">
+    <div class="viz">
+      <svg id="cutSvg" viewBox="-110 44 760 414" role="img" aria-labelledby="cutTitle"><title id="cutTitle" data-i18n="cutAria"></title></svg>
+    </div>
+    <div class="controls">
+      <div class="press-row">
+        <button class="btn big" id="pressBtn" aria-pressed="false" data-i18n="press"></button>
+        <span class="state" id="contactState"><i></i><x></x></span>
+      </div>
+      <p class="small" style="margin:0" data-i18n="pressHint"></p>
+      <div class="ctl"><label><span data-i18n="travel"></span><output id="xOut"></output></label><input type="range" id="xSl" min="0" max="4" step="0.01" value="0"></div>
+      <label class="check"><input type="checkbox" id="slowCk"><span data-i18n="slow"></span></label>
+      <label class="check"><input type="checkbox" id="soundCk" checked><span data-i18n="sound"></span></label>
+      <dl class="read">
+        <dt data-i18n="rJacket"></dt><dd id="jOut"></dd>
+        <dt data-i18n="rContact"></dt><dd id="cOut"></dd>
+        <dt data-i18n="rCurrent"></dt><dd id="iOut"></dd>
+      </dl>
+      <p class="small" style="margin:0" data-i18n="heroNote"></p>
+    </div>
+  </div>
+  <p class="phhead" data-i18n="ph1h"></p>
+  <div class="photos">
+    <figure><img src="photos/led-slot.jpg" alt="" data-alt="phLedAlt" loading="lazy"><figcaption data-i18n="phLed"></figcaption></figure>
+    <figure><img src="photos/legs-side.jpg" alt="" data-alt="phLegsAlt" loading="lazy"><figcaption data-i18n="phLegs"></figcaption></figure>
+    <figure><img src="photos/hook-pin-a.jpg" alt="" data-alt="phHookAlt" loading="lazy"><figcaption data-i18n="phHook"></figcaption></figure>
+    <figure><img src="photos/back-plus-face.jpg" alt="" data-alt="phBackAlt" loading="lazy" style="height:auto"><figcaption data-i18n="phBack"></figcaption></figure>
+  </div>
+</section>
+
+<!-- 2 -->
+<section id="s3">
+  <h2><span class="n">2</span><span data-i18n="h3"></span></h2>
+  <div class="prose"><p data-i18n="p3a"></p></div>
+  <div class="key" data-i18n="key3"></div>
+  <div class="prose"><p data-i18n="p3b"></p></div>
+  <div class="sim">
+    <div class="viz">
+      <svg id="schemSvg" viewBox="0 0 560 250" role="img" aria-labelledby="schemTitle"><title id="schemTitle" data-i18n="schemAria"></title></svg>
+      <svg id="ivSvg" viewBox="0 0 560 330" role="img" aria-labelledby="ivTitle"><title id="ivTitle" data-i18n="ivAria"></title></svg>
+      <div class="legendrow"><span><span class="sw" style="border-color:var(--led)"></span><x data-i18n="lgLed"></x></span><span><span class="sw d" style="border-color:var(--red)"></span><x data-i18n="lgLoad"></x></span></div>
+    </div>
+    <div class="controls">
+      <div class="ctl"><label><span data-i18n="emf"></span><output id="eOut"></output></label><input type="range" id="eSl" min="2" max="3.3" step="0.01" value="3.0"></div>
+      <div class="ctl"><label><span data-i18n="rint"></span><output id="rOut"></output></label><input type="range" id="rSl" min="5" max="100" step="1" value="30"></div>
+      <div><span class="lbl" data-i18n="color"></span><div class="seg" id="colorSeg"></div></div>
+      <dl class="read">
+        <dt data-i18n="rI"></dt><dd id="opI"></dd>
+        <dt data-i18n="rVled"></dt><dd id="opV"></dd>
+        <dt data-i18n="rVr"></dt><dd id="opVr"></dd>
+        <dt data-i18n="rPled"></dt><dd id="opP"></dd>
+        <dt data-i18n="rPr"></dt><dd id="opPr"></dd>
+        <dt data-i18n="rLife"></dt><dd id="opLife"></dd>
+      </dl>
+      <p class="small" style="margin:0" data-i18n="lifeNote"></p>
+      <p class="small" style="margin:0" data-i18n="s3cyc"></p>
+    </div>
+  </div>
+</section>
+
+<!-- 3 -->
+<section id="s5">
+  <h2><span class="n">3</span><span data-i18n="h5"></span></h2>
+  <div class="prose"><p data-i18n="p5a"></p><p data-i18n="p5b"></p></div>
+  <div class="sim">
+    <div class="viz">
+      <svg id="pinSvg" viewBox="-50 0 660 300" role="img" aria-labelledby="pinTitle"><title id="pinTitle" data-i18n="pinAria"></title></svg>
+    </div>
+    <div class="controls">
+      <div class="pinpick">
+        <span data-i18n="pin1"></span><div class="seg" id="pin1Seg"></div>
+        <span data-i18n="pin2"></span><div class="seg" id="pin2Seg"></div>
+      </div>
+      <div class="verdict" id="pinVerdict"></div>
+      <button class="btn" id="pinReset" data-i18n="pinReset"></button>
+      <p class="small" style="margin:0" data-i18n="p5note"></p>
+    </div>
+  </div>
+  <p class="phhead" data-i18n="ph5h"></p>
+  <div class="photos">
+    <figure><img src="photos/opened.jpg" alt="" data-alt="phOpenAlt" loading="lazy" style="height:auto"><figcaption data-i18n="phOpen"></figcaption></figure>
+    <figure><img src="photos/test-on-cell.jpg" alt="" data-alt="phTestAlt" loading="lazy" style="height:auto"><figcaption data-i18n="phTest"></figcaption></figure>
+  </div>
+</section>
+
+<!-- 4 -->
+<section id="s7">
+  <h2><span class="n">4</span><span data-i18n="h7"></span></h2>
+  <div class="prose"><p data-i18n="p7a"></p><p data-i18n="p7b"></p><p data-i18n="p7c"></p></div>
+  <div class="sim">
+    <div class="viz">
+      <svg id="rgbSvg" viewBox="0 0 560 320" role="img" aria-labelledby="rgbTitle"><title id="rgbTitle" data-i18n="rgbAria"></title></svg>
+      <svg id="rgbIV" viewBox="0 0 560 300" role="img" aria-labelledby="rgbIVTitle"><title id="rgbIVTitle" data-i18n="rgbIVAria"></title></svg>
+      <div class="legendrow"><span><span class="sw" style="border-color:#FF3B30"></span><x data-i18n="lgR"></x></span><span><span class="sw" style="border-color:#2ECC40"></span><x data-i18n="lgG"></x></span><span><span class="sw" style="border-color:#2F6BFF"></span><x data-i18n="lgB"></x></span><span><span class="sw d" style="border-color:var(--ink)"></span><x data-i18n="lgLoad"></x></span></div>
+    </div>
+    <div class="controls">
+      <div class="press-row">
+        <button class="btn big" id="pressBtn2" aria-pressed="false" data-i18n="hold"></button>
+      </div>
+      <label class="check"><input type="checkbox" id="cycCk" checked><span data-i18n="cycOn"></span></label>
+      <div class="ctl"><label><span data-i18n="cycPeriod"></span><output id="cycPeriodOut"></output></label><input type="range" id="cycSl" min="1" max="8" step="0.5" value="3"></div>
+      <label class="check"><input type="checkbox" id="pwmCk"><span data-i18n="pwmShow"></span></label>
+      <dl class="read">
+        <dt data-i18n="rPhase"></dt><dd id="rgbName"></dd>
+        <dt data-i18n="rDutyRGB"></dt><dd id="rgbDuty"></dd>
+        <dt data-i18n="rIavg"></dt><dd id="rgbAvg"></dd>
+        <dt data-i18n="rIdies"></dt><dd id="rgbDies"></dd>
+        <dt data-i18n="rTime"></dt><dd id="rgbTime"></dd>
+      </dl>
+      <p class="small" style="margin:0" data-i18n="rgbNote"></p>
+    </div>
+  </div>
+</section>
+
+<!-- 5 -->
+<section id="s4">
+  <h2><span class="n">5</span><span data-i18n="h4"></span></h2>
+  <div class="prose"><p data-i18n="p4"></p></div>
+  <div class="sim">
+    <div class="viz">
+      <svg id="colorSvg" viewBox="0 0 560 330" role="img" aria-labelledby="colorTitle"><title id="colorTitle" data-i18n="colorAria"></title></svg>
+      <div class="legendrow" id="colorLegend"></div>
+    </div>
+    <div class="controls">
+      <div class="prose"><p class="small" style="margin:0" data-i18n="p4note"></p></div>
+      <table class="tbl"><thead><tr><th data-i18n="tColor"></th><th>V<sub>F</sub></th><th data-i18n="tI"></th></tr></thead><tbody id="colorRows"></tbody></table>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="wrap">
+  <p data-i18n="foot1"></p>
+  <p data-i18n="foot2"></p>
+</footer>
+
+<script>
+(function(){
+const LANG = document.documentElement.lang === 'ko' ? 'ko' : 'en';
+const L = {
+en:{
+ nav1:"Inside the switch", nav2:"The click", nav3:"The circuit", nav4:"Battery and color", nav5:"Why it stopped working", nav6:"Energy of a click",
+ credit:"Created by Claude Opus 5.5 for <b>Physics 2</b> (supplement to demo 4, Electric circuits). The inspiration is a key-switch clicker keychain, a souvenir from the Korean Physical Society's Physics Outreach Committee special session <a href=\"https://www.kps.or.kr/conference/event/content/program/search_result_session.php?id=2748\">“무리(無理)하는 물리(物理)학자들 (Unphysical Physicists)”</a>, which <b>Sang Hoon Lee</b> photographed, opened, and repaired.",
+ title:"A key switch that lights up",
+ subtitle:"A clicky keyboard switch, a 3 V coin cell, and a tiny LED: a keychain toy that packs a spring, a snap mechanism, a switch contact, and a complete DC circuit with internal resistance into one transparent cube. Press it and see what happens inside.",
+ h1:"Inside the switch",
+ p1:"Each transparent cell of the toy holds one mechanical keyboard switch sitting on a CR1220 coin cell, − face up. The light-blue stem marks a “blue” switch, the clicky, tactile type. A 3 mm LED sits in the LED slot at the top of the switch housing, and its two legs run down through the housing. One leg is hooked around one of the switch's pins (pin A); the switch's other pin (pin B) rests on the cell's − face. The LED's other leg wraps around the edge of the cell to the + face on the back of the toy. Press the key (the button, the keycap in the drawing, or the space bar) and watch the stem, the click jacket, the leaf contacts, and the LED.",
+ cutAria:"Cutaway of the key switch on a coin cell", press:"Press", pressHint:"Hold to keep it pressed. Or drag the travel slider for slow motion.",
+ travel:"Key travel x", slow:"Slow motion", sound:"Click sound",
+ rForce:"Force on the key", rJacket:"Click jacket", rContact:"Leaf contact", rCurrent:"LED current",
+ jUp:"up (riding on the stem)", jDown:"snapped down", open:"open", closed:"closed", contactOpen:"Circuit open", contactClosed:"Circuit closed",
+ heroNote:"The drawing follows photos of the repaired toy: the cell's − face points up at the switch, the LED's cathode leg is hooked around switch pin A, switch pin B rests on the − face, and the LED's anode leg wraps around to the + face on the back. The green circle marks the contact that Sang Hoon Lee repaired. Dimensions and forces are typical values for clicky “blue” switches, not measurements.",
+ lbCap:"keycap", lbStem:"stem", lbJacket:"click jacket", lbSpring:"spring", lbLeaf:"leaf contacts", lbLed:"3 mm LED (in the LED slot)", lbPost:"center post", lbPin1:"LED leg → + face (back)", lbPin2:"pin B → − face", lbNeg:"− face (top)", lbPos:"+ can: back face and rim", lbCell:"CR1220 coin cell (3 V)",
+ h2:"The click: a force with a snap",
+ p2a:"Pressing the key compresses a coil spring, so the force grows roughly linearly with travel. A clicky switch adds a small sliding collar around the stem, the <i>click jacket</i>. It rides down with the stem until it is forced past a step in the housing. Just before the step the force peaks; past it the jacket snaps down and strikes the housing. That snap is the click you hear and the bump you feel.",
+ p2b:"A moment later, at about 2.2 mm, the stem's leg moves out of the way and the springy leaf touches the fixed contact: the switch actuates. On the way back the force is lower, because friction now opposes the motion in the other direction, and the jacket simply returns with the stem. The area between the two curves is energy lost in each press-and-release cycle.",
+ forceAria:"Force versus key travel", lgPress:"Pressing", lgRelease:"Releasing", lgSpring:"Spring alone",
+ forceNote:"Typical, illustrative values for a clicky blue switch. 1 cN ≈ 1 gf ≈ 0.01 N. Press the key (space bar, or the button in section 1) to move the red dot.",
+ swOpen:"switch open: press the key", noPins:"no current: check the leads (section 3)",
+ rPeak:"Peak force before the click", rClick:"Click point", rAct:"Actuation point", rTotal:"Total travel",
+ xlab:"Travel x (mm)", flab:"Force F (cN)",
+ h3:"The circuit: a battery with internal resistance and an LED",
+ p3a:"When the contact closes, the coin cell drives current through the switch and the LED. There is no resistor in the circuit. What keeps the current small is the battery itself: a small coin cell has an internal resistance <i>r</i> of order tens of ohms. Walking around the loop gives",
+ p3b:"An LED is not ohmic. Its current grows exponentially with voltage above a threshold, so solve graphically: the battery's load line <i>i</i> = (<span class=\"mf\">ℰ</span> − <i>V</i>)/<i>r</i> crosses the LED's <i>I</i>–<i>V</i> curve at the operating point.",
+ key3:"<span><span class=\"mf\">ℰ</span> − <i>ir</i> − <i>V</i><sub>LED</sub>(<i>i</i>) = 0</span><span><i>P</i><sub>LED</sub> = <i>iV</i><sub>LED</sub></span><span><i>P</i><sub><i>r</i></sub> = <i>i</i><sup>2</sup><i>r</i></span>",
+ schemAria:"Circuit diagram: coin cell with internal resistance, switch, and LED", ivAria:"LED current–voltage curve and the battery load line",
+ lgLed:"LED I–V curve", lgLoad:"Battery load line",
+ emf:"Battery emf <span class=\"mf\">ℰ</span>", rint:"Internal resistance r", color:"LED color",
+ rI:"Current i (switch closed)", rVled:"Voltage across the LED", rVr:"Voltage lost inside the cell, ir", rPled:"Power to the LED", rPr:"Power lost in r", rLife:"Continuous lighting time",
+ lifeNote:"Lighting time assumes a 37 mAh capacity, typical for a CR1220, and a constant current; a real cell's voltage sags as it drains.",
+ vlab:"Voltage V (V)", ilab:"Current i (mA)", sCell:"coin cell", sSwitch:"key switch", sLed:"LED",
+ colors:{red:"Red",yellow:"Yellow",green:"Green",blue:"Blue",cyan:"Cyan",white:"White",magenta:"Magenta"},
+ h4:"Why a dying battery dims a blue LED first",
+ p4:"The voltage at which an LED starts to conduct depends on the semiconductor's band gap, and hence on its color. Red LEDs turn on near 1.8–2 V; blue, cyan, green, and white ones (made of InGaN) need about 2.8–3 V, almost the full voltage of a fresh coin cell. As the cell drains and <span class=\"mf\">ℰ</span> drops, the blue LED's current collapses long before a red LED's would.",
+ colorAria:"LED current versus battery emf for different colors", p4note:"Curves use the internal resistance from section 2. The vertical line marks the current emf.",
+ tColor:"Color", tI:"Current now",
+ elab:"Battery emf ℰ (V)",
+ h5:"Why it stopped working",
+ p5a:"A coin cell's two terminals are its two faces. The small face inside the dark insulating gasket is the − terminal; here it faces up, toward the switch. The large flat face with the markings and the rim form the + can; the + face is on the back of the toy. The circuit runs from the + face through the LED's wrap-around anode leg, through the LED, into switch pin A via the hooked cathode leg, across the switch contact, and out of pin B onto the − face. The wrap-around leg is at + potential, so brushing the rim does no harm. The danger is one piece of metal touching both the − face and the can, which would short-circuit the cell.",
+ p5b:"The green circle marks the contact that Sang Hoon Lee repaired: switch pin B on the − face. When that contact is lost, the switch still clicks but the LED stays dark, because the circuit is open. Try the combinations below.",
+ pinAria:"Coin cell seen from above, with the two leads", pin1:"LED anode leg (wrapped to the back) touches", pin2:"Switch pin B (LED cathode side) touches",
+ tNeg:"− face (top)", tPos:"+ face (back) or rim", tNone:"nothing",
+ vOk:"<b>Lights up when pressed.</b> The LED's anode leg is on the + can and switch pin B on the − face, so the LED is forward biased.",
+ vRev:"<b>No light: reversed polarity.</b> The LED's anode leg is on − and pin B on +, so the LED is reverse biased and blocks the current. Its reverse breakdown voltage (about 5 V) is above 3 V, so nothing is damaged; flip the cell.",
+ vSame:"<b>No light: both leads on the same terminal.</b> There is no potential difference across the switch and LED, so no current flows.",
+ vOpen:"<b>No light: open circuit.</b> A lead is not touching the cell, so the loop is broken, although the switch still clicks. This is what happened to the toy before the repair.",
+ pinReset:"Repair (restore the working contacts)",
+ p5note:"The lead routing follows photos of the repaired toy. The logic holds for any series circuit of a switch and an LED across a coin cell.",
+ h6:"The energy of one click",
+ p6a:"Your finger does work on the spring, <i>W</i> = ∫<i>F</i> d<i>x</i>, the area under the pressing curve in section 2. Most of it comes back when the spring pushes the key up; the difference is lost to friction, sound, and heat. The light's energy comes from somewhere else entirely: the battery.",
+ hold:"Hold to press",
+ rWp:"Work done by your finger (press)", rWr:"Work returned by the spring (release)", rWd:"Lost per click (sound, heat)", rWe:"Electrical energy per click, ℰ i t", rWb:"Energy stored in the cell, ℰ × 37 mAh", rN:"Clicks per battery (rough)",
+ bMech:"Finger work per press", bElec:"Battery energy per click", bLost:"Mechanical loss per click",
+ p6b:"The finger's work and the battery's work per click are of the same order, a few millijoules, but they never mix: the switch only decides whether the battery's energy flows. A coin cell stores a few hundred joules, enough for something like 10<sup>5</sup> clicks. That is a key switch's job in any keyboard: a little mechanical work controls a separate flow of electrical energy.",
+ foot1:"Created by Claude Opus 5.5 for Physics 2 at Gyeongsang National University. Supplement to demo 4, Electric circuits. The toy is a souvenir from the Korean Physical Society's Physics Outreach Committee special session <a href=\"https://www.kps.or.kr/conference/event/content/program/search_result_session.php?id=2748\">“무리(無理)하는 물리(物理)학자들 (Unphysical Physicists)”</a>. Photos of the toy: Sang Hoon Lee.",
+ foot2:"Assumed values: CR1220 coin cell, 3.0 V and 37 mAh; internal resistance of order tens of ohms; LED forward voltages at 10 mA from typical datasheets, modeled with the Shockley equation plus a 12 Ω series resistance; switch forces and travel typical of clicky blue switches. The toy's internal wiring follows photos of the repaired toy, not a schematic from the manufacturer.",
+ mm:" mm", cN:" cN", mA:" mA", h:" h", mJ:" mJ", J:" J", V:" V", ohm:" Ω", mW:" mW", s:" s",
+ lbFix:"repaired by S. H. Lee",
+ lbHook:"LED leg hooked on pin A",
+ phSouv:"The souvenir, still in its bag: a keychain of key-switch cells from the KPS Physics Outreach Committee special session “Unphysical Physicists.”",
+ phSouvAlt:"A transparent keychain of three key-switch cells in a plastic bag",
+ phSide:"Side view: under each keycap, a switch sits on a coin cell inside a transparent cube.",
+ phSideAlt:"Side view of three transparent cells, each with a keycap, a switch, and a coin cell",
+ ph1h:"<b>Compare with the real toy.</b> Photos by Sang Hoon Lee.",
+ phLed:"The 3 mm LED in the switch's LED slot, glowing green while the key is pressed.",
+ phLedAlt:"A key switch with a green LED glowing in its LED slot",
+ phLegs:"The LED's legs run down through the switch housing, and the center post and a switch pin rest on the cell below (rotated to stand upright).",
+ phLegsAlt:"Side view of a switch on a coin cell, showing the LED and its legs",
+ phHook:"Under the switch, an LED leg is hooked around switch pin A (rotated to stand upright).",
+ phHookAlt:"A thin wire leg looped around a switch pin",
+ phBack:"The back of the toy: a cell's + face, with its markings. The bent wire at the lower left is the LED's anode leg, pressed against the + face.",
+ phBackAlt:"Back of the keychain showing CR1220 coin cells with wire legs across them",
+ ph5h:"<b>Taking it apart.</b> Photos by Sang Hoon Lee.",
+ phOpen:"One cell opened: the switch removed, with its CR1220 coin cell beside it.",
+ phOpenAlt:"The keychain with one switch removed and a coin cell lying beside it",
+ phTest:"Testing a switch directly on a coin cell. Look at the top: the cell rests on the center post, and the two leads touch its terminals. With each lead on the right terminal, the LED lights.",
+ phTestAlt:"A switch held against a coin cell, its LED glowing cyan",
+ nav7:"Color-cycling LED",
+ h7:"Why the color keeps changing",
+ p7a:"Hold the key down and the toy's LED drifts from one color to the next. It is a self-cycling RGB LED. The 3 mm dome holds three tiny LED chips (red, green, and blue) and a small control chip, all fed by the same two legs. While the switch is closed, the control chip runs its built-in clock and switches the three chips on and off in a programmed sequence.",
+ p7b:"Mixed colors such as yellow, cyan, and magenta come from running two chips together. The control chip switches each chip on and off hundreds or thousands of times a second (pulse-width modulation, PWM) and varies the fraction of time it is on, its duty cycle. Your eye averages the flicker, so the color seems to drift smoothly. Releasing the key cuts the power and the control chip resets, so each press starts the cycle again from the same color.",
+ p7c:"Each chip is still a diode on the battery's load line, but the operating point now hops between three curves. The red chip needs only about 2 V and draws far more current than the green and blue chips, which need nearly the full 3 V of the cell. That is why, on a tired cell, the green and blue phases fade first while red stays bright; the next section shows this in detail.",
+ rgbAria:"The RGB LED's three chips and control chip, and its duty cycles over one color cycle",
+ rgbIVAria:"Current–voltage curves of the red, green, and blue chips with the battery's load line",
+ lgR:"Red chip",
+ lgG:"Green chip",
+ lgB:"Blue chip",
+ cycOn:"Color-cycling RGB LED (as in the toy)",
+ cycPeriod:"Cycle period T",
+ pwmShow:"Show the PWM pulses (slowed down)",
+ rPhase:"Color now",
+ rDutyRGB:"Duty cycles R · G · B",
+ rIavg:"Average current (approx.)",
+ rIdies:"Each chip alone: R · G · B",
+ rTime:"Time since the key was pressed",
+ rgbNote:"Illustrative model: a hue-wheel sequence with duty cycles between 0 and 100%, and an average current Σ dₖiₖ with each chip's current found alone on the load line. Real control chips differ in sequence, speed, and drive. Try it on the toy: each press should start from the same color, and a slow-motion video often shows the PWM flicker. When this option is on, the LED in section 1 cycles too; sections 2 and 5 analyze one color at a time. The model also ignores any current limiting inside the control chip, and a small coin cell sags when asked for tens of milliamperes, so the red phase draws less in the real toy than the load line alone suggests.",
+ lbIC:"control chip",
+ lbCycle:"One color cycle",
+ lbDuty:"Duty cycle over one cycle",
+ lbPWM:"PWM pulses at this moment (slowed down)",
+ lbPWMoff:"Turn on “Show the PWM pulses” to see the switching.",
+ s3cyc:"The toy's LED actually cycles through colors (section 4). Pick one color here to analyze a single phase of the cycle.",
+ themeDark:"Switch to dark mode", themeLight:"Switch to light mode"
+},
+ko:{
+ nav1:"스위치 속", nav2:"딸깍 소리", nav3:"회로", nav4:"전지와 색", nav5:"고장 난 이유", nav6:"한 번 누를 때의 에너지",
+ credit:"한국물리학회 물리대중화위원회 특별세션 <a href=\"https://www.kps.or.kr/conference/event/content/program/search_result_session.php?id=2748\">“무리(無理)하는 물리(物理)학자들”</a>의 기념품인 키 스위치 클리커 열쇠고리를 <b>이상훈</b> 교수가 찍고, 열어 보고, 고친 것을 바탕으로 Claude Opus 5.5가 <b>물리학2</b>(데모 4 전기회로의 보충 자료)를 위해 만들었습니다.",
+ title:"불이 켜지는 키 스위치",
+ subtitle:"딸깍거리는 키보드 스위치, 3 V 동전형 전지, 작은 LED. 이 열쇠고리 장난감은 용수철, 똑딱 걸림 장치, 스위치 접점, 그리고 내부 저항이 있는 직류 회로 하나를 투명한 정육면체 안에 담고 있습니다. 눌러 보고 안에서 무슨 일이 일어나는지 확인해 보세요.",
+ h1:"스위치 속",
+ p1:"장난감의 투명한 칸마다 기계식 키보드 스위치 하나가 − 면이 위를 향한 CR1220 동전형 전지 위에 놓여 있습니다. 하늘색 스템은 딸깍 소리가 나고 걸림이 느껴지는 “청축” 스위치라는 표시입니다. 3 mm LED가 스위치 하우징 윗부분의 LED 자리에 꽂혀 있고, 두 다리는 하우징을 지나 아래로 내려옵니다. 한 다리는 스위치의 핀 하나(핀 A)에 감겨 있고, 스위치의 다른 핀(핀 B)은 전지의 − 면에 닿아 있습니다. LED의 나머지 다리는 전지 가장자리를 감아 돌아 장난감 뒷면 쪽의 + 면에 닿습니다. 키를 누르고(버튼, 그림 속 키캡, 또는 스페이스 바) 스템, 클릭 재킷, 판 접점, LED가 어떻게 움직이는지 보세요.",
+ cutAria:"동전형 전지 위에 놓인 키 스위치의 단면", press:"누르기", pressHint:"누르고 있으면 계속 눌린 상태가 됩니다. 느리게 보려면 이동 거리 슬라이더를 끌어 보세요.",
+ travel:"키 이동 거리 x", slow:"느린 동작", sound:"딸깍 소리",
+ rForce:"키에 가하는 힘", rJacket:"클릭 재킷", rContact:"판 접점", rCurrent:"LED 전류",
+ jUp:"위 (스템과 함께 움직임)", jDown:"아래로 걸려 내려감", open:"열림", closed:"닫힘", contactOpen:"회로 열림", contactClosed:"회로 닫힘",
+ heroNote:"그림은 고친 장난감의 사진을 따랐습니다. 전지의 − 면이 스위치 쪽(위)을 향하고, LED의 음극 다리는 스위치 핀 A에 감겨 있으며, 스위치 핀 B는 − 면에 닿고, LED의 양극 다리는 감아 돌아 뒷면의 + 면에 닿습니다. 초록 원은 이상훈 교수가 고친 접촉 부위입니다. 치수와 힘은 측정값이 아니라 청축 스위치의 전형적인 값입니다.",
+ lbCap:"키캡", lbStem:"스템", lbJacket:"클릭 재킷", lbSpring:"용수철", lbLeaf:"판 접점", lbLed:"3 mm LED (LED 자리)", lbPost:"가운데 기둥", lbPin1:"LED 다리 → + 면 (뒷면)", lbPin2:"핀 B → − 면", lbNeg:"− 면 (위)", lbPos:"+ 외피: 뒷면과 테두리", lbCell:"CR1220 동전형 전지 (3 V)",
+ h2:"딸깍: 똑 끊어지는 힘",
+ p2a:"키를 누르면 코일 용수철이 압축되므로 힘은 이동 거리에 거의 비례해 커집니다. 딸깍 스위치에는 스템을 둘러싼 작은 미끄럼 고리, 곧 <b>클릭 재킷</b>이 더 있습니다. 재킷은 스템과 함께 내려가다가 하우징의 턱을 억지로 넘어가야 합니다. 턱 바로 앞에서 힘이 최대가 되고, 턱을 넘으면 재킷이 툭 떨어져 하우징을 칩니다. 이것이 들리는 딸깍 소리이고 손끝에 느껴지는 걸림입니다.",
+ p2b:"조금 더 내려간 약 2.2 mm에서 스템의 다리가 비켜나며 탄성 있는 판이 고정 접점에 닿습니다. 스위치가 작동하는 순간입니다. 돌아올 때는 마찰이 반대 방향으로 작용하므로 힘이 더 작고, 재킷은 그냥 스템과 함께 올라옵니다. 두 곡선 사이의 넓이는 누르고 떼는 한 번마다 잃는 에너지입니다.",
+ forceAria:"키 이동 거리에 따른 힘", lgPress:"누를 때", lgRelease:"뗄 때", lgSpring:"용수철만",
+ forceNote:"청축 스위치의 전형적인 예시 값입니다. 1 cN ≈ 1 gf ≈ 0.01 N. 키를 누르면(스페이스 바 또는 1절의 버튼) 빨간 점이 움직입니다.",
+ swOpen:"스위치 열림: 키를 누르세요", noPins:"전류 없음: 도선을 확인하세요 (3절)",
+ rPeak:"딸깍 직전의 최대 힘", rClick:"딸깍 지점", rAct:"작동 지점", rTotal:"전체 이동 거리",
+ xlab:"이동 거리 x (mm)", flab:"힘 F (cN)",
+ h3:"회로: 내부 저항이 있는 전지와 LED",
+ p3a:"접점이 닫히면 동전형 전지가 스위치와 LED에 전류를 흘립니다. 회로에 저항기는 없습니다. 전류를 작게 유지하는 것은 전지 자신입니다. 작은 동전형 전지는 수십 옴 정도의 내부 저항 <i>r</i>를 가집니다. 고리를 한 바퀴 돌면",
+ p3b:"LED는 옴 법칙을 따르지 않습니다. 문턱 전압을 넘으면 전류가 전압에 따라 지수적으로 커지므로 그래프로 풉니다. 전지의 부하선 <i>i</i> = (<span class=\"mf\">ℰ</span> − <i>V</i>)/<i>r</i>가 LED의 <i>I</i>–<i>V</i> 곡선과 만나는 점이 동작점입니다.",
+ key3:"<span><span class=\"mf\">ℰ</span> − <i>ir</i> − <i>V</i><sub>LED</sub>(<i>i</i>) = 0</span><span><i>P</i><sub>LED</sub> = <i>iV</i><sub>LED</sub></span><span><i>P</i><sub><i>r</i></sub> = <i>i</i><sup>2</sup><i>r</i></span>",
+ schemAria:"회로도: 내부 저항이 있는 동전형 전지, 스위치, LED", ivAria:"LED의 전류–전압 곡선과 전지의 부하선",
+ lgLed:"LED I–V 곡선", lgLoad:"전지 부하선",
+ emf:"전지 기전력 <span class=\"mf\">ℰ</span>", rint:"내부 저항 r", color:"LED 색",
+ rI:"전류 i (스위치 닫힘)", rVled:"LED 양단 전압", rVr:"전지 안에서 잃는 전압 ir", rPled:"LED에 전달되는 전력", rPr:"r에서 잃는 전력", rLife:"계속 켰을 때 시간",
+ lifeNote:"켜지는 시간은 CR1220의 전형적인 용량 37 mAh와 일정한 전류를 가정한 값입니다. 실제 전지는 닳으면서 전압이 떨어집니다.",
+ vlab:"전압 V (V)", ilab:"전류 i (mA)", sCell:"동전형 전지", sSwitch:"키 스위치", sLed:"LED",
+ colors:{red:"빨강",yellow:"노랑",green:"초록",blue:"파랑",cyan:"청록",white:"흰색",magenta:"자홍"},
+ h4:"전지가 닳으면 파란 LED부터 어두워지는 이유",
+ p4:"LED가 전류를 흘리기 시작하는 전압은 반도체의 띠틈, 곧 색에 따라 다릅니다. 빨간 LED는 1.8–2 V 근처에서 켜지지만, 파랑·청록·초록·흰색 LED(InGaN으로 만듦)는 약 2.8–3 V가 필요해서 새 동전형 전지의 전압과 거의 같습니다. 전지가 닳아 <span class=\"mf\">ℰ</span>가 떨어지면 파란 LED의 전류는 빨간 LED보다 훨씬 먼저 급격히 줄어듭니다.",
+ colorAria:"색에 따른 전지 기전력 대비 LED 전류", p4note:"곡선은 2절의 내부 저항을 씁니다. 세로선은 현재 기전력을 나타냅니다.",
+ tColor:"색", tI:"현재 전류",
+ elab:"전지 기전력 ℰ (V)",
+ h5:"고장 난 이유",
+ p5a:"동전형 전지의 두 단자는 두 면입니다. 검은 절연 고무링 안의 작은 면이 − 단자이며, 여기서는 위쪽, 곧 스위치 쪽을 향합니다. 글씨가 새겨진 넓은 평면과 테두리가 + 외피를 이루며, + 면은 장난감 뒷면 쪽에 있습니다. 회로는 + 면에서 시작해 감아 도는 LED 양극 다리, LED, 핀 A에 감긴 음극 다리, 스위치 접점, 핀 B를 거쳐 − 면으로 이어집니다. 감아 도는 다리는 + 전위이므로 테두리에 닿아도 괜찮습니다. 위험한 것은 금속 하나가 − 면과 외피에 동시에 닿는 경우로, 이때 전지가 단락됩니다.",
+ p5b:"초록 원은 이상훈 교수가 고친 접촉 부위, 곧 − 면에 닿는 스위치 핀 B입니다. 이 접촉이 끊기면 스위치는 여전히 딸깍거리지만 LED는 켜지지 않습니다. 회로가 열리기 때문입니다. 아래에서 조합을 바꿔 보세요.",
+ pinAria:"위에서 본 동전형 전지와 두 도선", pin1:"LED 양극 다리(뒷면으로 감아 돔)가 닿는 곳", pin2:"스위치 핀 B(LED 음극 쪽)가 닿는 곳",
+ tNeg:"− 면 (위)", tPos:"+ 면 (뒷면) 또는 테두리", tNone:"없음",
+ vOk:"<b>누르면 켜집니다.</b> LED 양극 다리가 + 외피에, 스위치 핀 B가 − 면에 닿아 LED에 순방향 전압이 걸립니다.",
+ vRev:"<b>켜지지 않음: 극성이 반대입니다.</b> LED 양극 다리가 −, 핀 B가 +에 닿아 LED에 역방향 전압이 걸리고 전류가 막힙니다. 역방향 항복 전압(약 5 V)이 3 V보다 높으므로 망가지지는 않습니다. 전지를 뒤집으면 됩니다.",
+ vSame:"<b>켜지지 않음: 두 도선이 같은 단자에 닿았습니다.</b> 스위치와 LED 양단에 전위차가 없으므로 전류가 흐르지 않습니다.",
+ vOpen:"<b>켜지지 않음: 회로가 열려 있습니다.</b> 도선 하나가 전지에 닿지 않아 고리가 끊겼습니다. 스위치는 여전히 딸깍거립니다. 고치기 전의 장난감이 바로 이 상태였습니다.",
+ pinReset:"고치기 (제대로 된 접촉으로 되돌리기)",
+ p5note:"도선 배치는 고친 장난감의 사진을 따랐습니다. 이 논리는 동전형 전지에 스위치와 LED를 직렬로 연결한 어떤 회로에도 성립합니다.",
+ h6:"한 번 누를 때의 에너지",
+ p6a:"손가락은 용수철에 일 <i>W</i> = ∫<i>F</i> d<i>x</i>를 합니다. 2절의 누를 때 곡선 아래 넓이입니다. 대부분은 용수철이 키를 밀어 올릴 때 되돌아오고, 그 차이는 마찰, 소리, 열로 사라집니다. 빛의 에너지는 전혀 다른 곳, 곧 전지에서 옵니다.",
+ hold:"누르고 있기",
+ rWp:"손가락이 한 일 (누를 때)", rWr:"용수철이 돌려준 일 (뗄 때)", rWd:"한 번마다 잃는 에너지 (소리, 열)", rWe:"한 번 누를 때의 전기 에너지 ℰ i t", rWb:"전지에 저장된 에너지 ℰ × 37 mAh", rN:"전지 하나로 누를 수 있는 횟수 (대략)",
+ bMech:"한 번 누를 때 손가락의 일", bElec:"한 번 누를 때 전지의 에너지", bLost:"한 번마다 잃는 역학적 에너지",
+ p6b:"한 번 누를 때 손가락의 일과 전지의 일은 모두 몇 밀리줄로 크기가 비슷하지만, 서로 섞이지 않습니다. 스위치는 전지의 에너지가 흐를지 말지만 정합니다. 동전형 전지는 수백 줄을 저장하므로 대략 10<sup>5</sup>번쯤 누를 수 있습니다. 어느 키보드에서나 키 스위치가 하는 일이 바로 이것입니다. 작은 역학적 일이 별도의 전기 에너지 흐름을 제어합니다.",
+ foot1:"경상국립대학교 물리학2를 위해 Claude Opus 5.5가 만들었습니다. 데모 4 전기회로의 보충 자료입니다. 이 장난감은 한국물리학회 물리대중화위원회 특별세션 <a href=\"https://www.kps.or.kr/conference/event/content/program/search_result_session.php?id=2748\">“무리(無理)하는 물리(物理)학자들”</a>의 기념품입니다. 장난감 사진: 이상훈.",
+ foot2:"가정한 값: CR1220 동전형 전지 3.0 V, 37 mAh; 내부 저항은 수십 옴 정도; LED의 10 mA에서의 순방향 전압은 전형적인 데이터시트 값이며, 쇼클리 식에 직렬 저항 12 Ω을 더해 모형화했습니다; 스위치의 힘과 이동 거리는 청축 스위치의 전형적인 값입니다. 장난감 내부 배선은 제조사 회로도가 아니라 고친 장난감의 사진을 따랐습니다.",
+ mm:" mm", cN:" cN", mA:" mA", h:"시간", mJ:" mJ", J:" J", V:" V", ohm:" Ω", mW:" mW", s:"초",
+ lbFix:"이상훈 교수가 고친 곳",
+ lbHook:"핀 A에 감긴 LED 다리",
+ phSouv:"봉지에 든 그대로의 기념품. 한국물리학회 물리대중화위원회 특별세션 “무리(無理)하는 물리(物理)학자들”에서 받은 키 스위치 열쇠고리입니다.",
+ phSouvAlt:"비닐봉지에 든, 키 스위치 칸 세 개로 된 투명한 열쇠고리",
+ phSide:"옆에서 본 모습. 투명한 정육면체마다 키캡 아래의 스위치가 동전형 전지 위에 놓여 있습니다.",
+ phSideAlt:"키캡, 스위치, 동전형 전지가 각각 들어 있는 투명한 칸 세 개의 옆모습",
+ ph1h:"<b>실제 장난감과 비교해 보세요.</b> 사진: 이상훈.",
+ phLed:"스위치의 LED 자리에 꽂힌 3 mm LED. 키를 누르는 동안 초록색으로 빛납니다.",
+ phLedAlt:"LED 자리에서 초록 LED가 빛나는 키 스위치",
+ phLegs:"LED 다리가 스위치 하우징을 지나 아래로 내려오고, 가운데 기둥과 스위치 핀이 아래 전지에 닿아 있습니다(세워서 보이도록 회전).",
+ phLegsAlt:"동전형 전지 위 스위치의 옆모습. LED와 다리가 보임",
+ phHook:"스위치 아래쪽에서 LED 다리가 스위치 핀 A에 감겨 있습니다(세워서 보이도록 회전).",
+ phHookAlt:"스위치 핀에 고리처럼 감긴 가는 도선 다리",
+ phBack:"장난감 뒷면. 글씨가 새겨진 전지의 + 면이며, 왼쪽 아래의 구부러진 도선이 + 면에 눌려 있는 LED 양극 다리입니다.",
+ phBackAlt:"도선 다리가 가로지르는 CR1220 동전형 전지들이 보이는 열쇠고리 뒷면",
+ ph5h:"<b>열어 보기.</b> 사진: 이상훈.",
+ phOpen:"한 칸을 연 모습. 스위치를 빼냈고, 옆에 CR1220 동전형 전지가 있습니다.",
+ phOpenAlt:"스위치 하나를 빼낸 열쇠고리와 그 옆의 동전형 전지",
+ phTest:"스위치를 동전형 전지에 직접 대어 시험하기. 위쪽을 보세요. 전지가 가운데 기둥 위에 놓여 있고, 두 도선이 전지 단자에 닿아 있습니다. 도선이 각각 올바른 단자에 닿으면 LED가 켜집니다.",
+ phTestAlt:"동전형 전지에 댄 스위치에서 LED가 청록색으로 빛남",
+ nav7:"색이 바뀌는 LED",
+ h7:"색이 계속 바뀌는 이유",
+ p7a:"키를 계속 누르고 있으면 장난감의 LED는 한 색에서 다음 색으로 천천히 바뀝니다. 스스로 색을 바꾸는 RGB LED이기 때문입니다. 3 mm 돔 안에는 빨강, 초록, 파랑의 작은 LED 칩 세 개와 작은 제어 칩이 들어 있고, 모두 같은 두 다리로 전원을 받습니다. 스위치가 닫혀 있는 동안 제어 칩은 내장된 시계에 맞춰 세 칩을 정해진 순서로 켜고 끕니다.",
+ p7b:"노랑, 청록, 자홍 같은 섞인 색은 두 칩을 함께 켜서 만듭니다. 제어 칩은 각 칩을 1초에 수백에서 수천 번 켜고 끄며(펄스 폭 변조, PWM), 켜져 있는 시간의 비율, 곧 듀티 사이클을 바꿉니다. 눈은 이 깜빡임을 평균내므로 색이 부드럽게 변하는 것처럼 보입니다. 키를 떼면 전원이 끊겨 제어 칩이 초기화되므로, 누를 때마다 같은 색에서 다시 시작합니다.",
+ p7c:"각 칩은 여전히 전지 부하선 위의 다이오드이지만, 이제 동작점이 세 곡선 사이를 옮겨 다닙니다. 빨간 칩은 약 2 V만 있으면 되므로 전지의 3 V를 거의 다 써야 하는 초록·파랑 칩보다 훨씬 큰 전류를 흘립니다. 그래서 전지가 닳으면 빨강은 여전히 밝지만 초록과 파랑 단계가 먼저 어두워집니다. 다음 절에서 이를 자세히 살펴봅니다.",
+ rgbAria:"RGB LED의 세 칩과 제어 칩, 그리고 한 주기 동안의 듀티 사이클",
+ rgbIVAria:"빨강, 초록, 파랑 칩의 전류–전압 곡선과 전지 부하선",
+ lgR:"빨간 칩",
+ lgG:"초록 칩",
+ lgB:"파란 칩",
+ cycOn:"색이 바뀌는 RGB LED (장난감과 같음)",
+ cycPeriod:"색 주기 T",
+ pwmShow:"PWM 펄스 보기 (느리게)",
+ rPhase:"지금 색",
+ rDutyRGB:"듀티 사이클 R · G · B",
+ rIavg:"평균 전류 (근사)",
+ rIdies:"칩 하나만 켰을 때: R · G · B",
+ rTime:"키를 누른 뒤 지난 시간",
+ rgbNote:"예시 모형: 색상환을 따라가는 순서와 0–100% 사이의 듀티 사이클을 쓰고, 평균 전류는 각 칩의 전류를 부하선에서 따로 구해 Σ dₖiₖ로 어림했습니다. 실제 제어 칩은 순서, 속도, 구동 방식이 서로 다릅니다. 장난감으로 확인해 보세요. 누를 때마다 같은 색에서 시작해야 하고, 느린 동작 영상에서는 PWM 깜빡임이 보이는 경우가 많습니다. 이 옵션을 켜면 1절의 LED도 색이 바뀝니다. 2절과 5절은 한 번에 한 색씩 분석합니다. 또한 이 모형은 제어 칩 안의 전류 제한을 무시하며, 작은 동전형 전지는 수십 밀리암페어를 내려 하면 전압이 떨어지므로, 실제 장난감의 빨강 단계 전류는 부하선만으로 구한 값보다 작습니다.",
+ lbIC:"제어 칩",
+ lbCycle:"색 한 주기",
+ lbDuty:"한 주기 동안의 듀티 사이클",
+ lbPWM:"지금 순간의 PWM 펄스 (느리게)",
+ lbPWMoff:"“PWM 펄스 보기”를 켜면 켜고 꺼지는 모습이 보입니다.",
+ s3cyc:"장난감의 LED는 실제로 색이 계속 바뀝니다(4절). 여기서는 색 하나를 골라 주기의 한 단계를 분석합니다.",
+ themeDark:"어두운 화면으로 전환", themeLight:"밝은 화면으로 전환"
+}};
+const T = L[LANG];
+document.querySelectorAll('[data-i18n]').forEach(e => { const v = T[e.dataset.i18n]; if (v !== undefined) e.innerHTML = v; });
+document.querySelectorAll('img[data-alt]').forEach(e => { const v = T[e.dataset.alt]; if (v !== undefined) e.alt = v; });
+
+const NS = 'http://www.w3.org/2000/svg';
+const $ = id => document.getElementById(id);
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function el(tag, attrs, parent, text){ const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; if (parent) parent.appendChild(e); return e; }
+const clear = s => { [...s.childNodes].forEach(n => { if (n.nodeName !== 'title') s.removeChild(n); }); };
+
+/* ---------- physics models ---------- */
+const XCLICK = 1.8, XACT = 2.2, XREL = 2.0, XMAX = 4.0;
+const Fspring = x => 30 + 7*x;
+const Fpress = x => Fspring(x) + (x < XCLICK ? 20*Math.pow(x/XCLICK, 2) : 20*Math.exp(-(x - XCLICK)/0.08));
+const Frelease = x => Fspring(x) - 4;
+const integ = (f, a, b, n=2000) => { let s = 0, h = (b-a)/n; for (let i=0;i<n;i++) s += f(a + (i+0.5)*h); return s*h; };
+const WP = integ(Fpress, 0, XMAX)*1e-5, WR = integ(Frelease, 0, XMAX)*1e-5;   // J (cN·mm = 1e-5 J)
+const COLORS = [
+  {k:'red', vf:1.95, nvt:0.050, col:'#FF3B30'}, {k:'yellow', vf:2.05, nvt:0.050, col:'#FFC400'},
+  {k:'green', vf:2.85, nvt:0.060, col:'#2ECC40'}, {k:'blue', vf:2.95, nvt:0.060, col:'#2F6BFF'},
+  {k:'cyan', vf:3.00, nvt:0.060, col:'#2FD9E8'}, {k:'white', vf:3.00, nvt:0.062, col:'#E8F0FF'}
+];
+const RS = 12, CAP = 0.037;   // LED series resistance (ohm), cell capacity (Ah)
+const vLed = (c, i) => { const Is = 0.010/Math.exp((c.vf - 0.010*RS)/c.nvt); return c.nvt*Math.log(1 + i/Is) + i*RS; };
+function opPoint(c, E, r){
+  if (E <= 0) return 0;
+  let lo = 0, hi = E/r;
+  for (let k=0;k<80;k++){ const m = (lo+hi)/2; if (E - m*r - vLed(c, m) > 0) lo = m; else hi = m; }
+  return (lo+hi)/2;
+}
+
+/* ---------- state ---------- */
+const S = { x:0, target:0, jacketDown:false, contact:false, E:3.0, r:30, color:'green', pin1:'pos', pin2:'neg', cycle:true, period:3, pwm:false, tOn:null, hold:0.2, slow:false, sound:true };
+const col = () => COLORS.find(c => c.k === S.color);
+const pinsOK = () => S.pin1 === 'pos' && S.pin2 === 'neg';
+const iNow = () => opPoint(col(), S.E, S.r);
+const lit = () => S.contact && pinsOK();
+
+/* ---------- sound ---------- */
+let AC = null;
+function clickSound(strength){
+  if (!S.sound) return;
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    const n = Math.floor(AC.sampleRate*0.018), buf = AC.createBuffer(1, n, AC.sampleRate), d = buf.getChannelData(0);
+    for (let i=0;i<n;i++) d[i] = (Math.random()*2-1)*Math.exp(-i/(n*0.18));
+    const src = AC.createBufferSource(); src.buffer = buf;
+    const bp = AC.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 3200; bp.Q.value = 1.4;
+    const g = AC.createGain(); g.gain.value = 0.9*strength;
+    src.connect(bp); bp.connect(g); g.connect(AC.destination); src.start();
+  } catch(e){}
+}
+
+/* ---------- cutaway drawing ---------- */
+function leadPaths(){
+  // As in the repaired toy: the cell's − face points up at the switch. The LED's anode leg runs down through the housing
+  // and wraps around the cell to the + face on the back; its cathode leg is hooked around switch pin A; switch pin B rests on the − face.
+  const p1 = {pos:'M196 320 L196 330 L118 330 L118 398 Q118 406 130 406 L250 406 L250 383',
+              neg:'M196 320 L196 343',
+              none:'M196 320 L196 330 L118 330 L118 360'}[S.pin1];
+  const p2 = {neg:'M330 314 L330 343', pos:'M330 314 L330 326 L378 326 L378 366 L371 366', none:'M330 314 L330 324 L350 334'}[S.pin2];
+  return {p1, p2};
+}
+function drawCut(){
+  const s = $('cutSvg'); clear(s);
+  const d = S.x/XMAX*58;
+  const jOff = S.jacketDown ? Math.max(d, 26) : d;
+  const on = lit(), lc = ledColor();
+  const g = el('g', {}, s);
+  // acrylic case
+  el('rect',{x:86,y:150,width:348,height:282,rx:10,style:'fill:color-mix(in srgb,var(--blue) 4%,transparent);stroke:var(--line);stroke-width:2'},g);
+  // coin cell, − face up: − face and gasket on top, + can (bottom face and rim) below
+  el('rect',{x:150,y:352,width:220,height:30,rx:5,style:'fill:var(--silver);stroke:var(--muted);stroke-width:1.5'},g);
+  el('rect',{x:170,y:346,width:180,height:8,rx:3,style:'fill:#3A3F48'},g);
+  el('rect',{x:182,y:342,width:156,height:6,rx:2,style:'fill:var(--silver);stroke:var(--muted);stroke-width:1'},g);
+  el('text',{x:160,y:374,'font-size':15,'font-weight':700,style:'fill:#1A2433'},g,'+');
+  el('text',{x:286,y:340,'font-size':15,'font-weight':700,style:'fill:var(--ink)'},g,'−');
+  // switch bottom housing (white)
+  el('rect',{x:160,y:262,width:200,height:58,rx:4,style:'fill:#F2F4F7;stroke:var(--muted);stroke-width:1.5'},g);
+  // LED legs inside the housing (dashed): anode leg (left) and cathode leg (right)
+  el('path',{d:'M203 212 L203 300 L196 320',style:'fill:none;stroke:var(--leaf);stroke-width:2;stroke-dasharray:4 3'},g);
+  el('path',{d:'M215 212 L215 300 L222 320',style:'fill:none;stroke:var(--leaf);stroke-width:2;stroke-dasharray:4 3'},g);
+  // leaf contacts; the moving leaf belongs to pin A, the fixed leaf to pin B
+  const lx = S.contact ? 328 : 314;
+  el('line',{x1:330,y1:268,x2:330,y2:314,style:'stroke:var(--leaf);stroke-width:4;stroke-linecap:round'},g);
+  el('path',{d:`M302 314 Q 306 290 ${lx} 274`,style:'fill:none;stroke:var(--leaf);stroke-width:3.5;stroke-linecap:round'},g);
+  // pin A stub, with the LED cathode leg hooked around it
+  el('line',{x1:302,y1:314,x2:302,y2:334,style:'stroke:var(--leaf);stroke-width:3'},g);
+  el('path',{d:'M222 320 L222 330 L296 330',style:'fill:none;stroke:var(--leaf);stroke-width:2.4'},g);
+  el('circle',{cx:302,cy:330,r:5,style:'fill:none;stroke:var(--leaf);stroke-width:2.4'},g);
+  // center post resting on the − face
+  el('rect',{x:252,y:320,width:16,height:22,rx:3,style:'fill:#E3E6EB;stroke:var(--muted);stroke-width:1'},g);
+  // leads to the cell
+  const P = leadPaths();
+  el('path',{d:P.p1,style:'fill:none;stroke:var(--leaf);stroke-width:3;stroke-linejoin:round'},g);
+  el('path',{d:P.p2,style:'fill:none;stroke:var(--leaf);stroke-width:3;stroke-linejoin:round'},g);
+  if (S.pin1 === 'none') el('circle',{cx:118,cy:360,r:4,style:'fill:var(--panel);stroke:var(--leaf);stroke-width:2'},g);
+  if (S.pin2 === 'none') el('circle',{cx:350,cy:334,r:4,style:'fill:var(--panel);stroke:var(--leaf);stroke-width:2'},g);
+  // the repaired contact
+  el('circle',{cx:330,cy:332,r:15,style:`fill:none;stroke:var(--green);stroke-width:2;stroke-dasharray:4 3;opacity:${pinsOK() ? 1 : 0.5}`},g);
+  if (!pinsOK()) el('text',{x:404,y:300,'font-size':22,'font-weight':700,style:'fill:var(--red)'},g,'!');
+  // upper housing (clear)
+  el('rect',{x:150,y:196,width:220,height:66,rx:5,style:'fill:color-mix(in srgb,var(--blue) 6%,transparent);stroke:var(--muted);stroke-width:1.5'},g);
+  el('line',{x1:150,y1:236,x2:186,y2:236,style:'stroke:var(--muted);stroke-width:2'},g); el('line',{x1:334,y1:236,x2:370,y2:236,style:'stroke:var(--muted);stroke-width:2'},g);
+  // 3 mm LED in the LED slot, with glow
+  if (on){ const r = 26 + 46*Math.min(1, iShown()/0.010);
+    const gr = el('radialGradient',{id:'gl'}, el('defs',{},g)); el('stop',{offset:'0%','stop-color':lc,'stop-opacity':0.85},gr); el('stop',{offset:'100%','stop-color':lc,'stop-opacity':0},gr);
+    el('circle',{cx:209,cy:202,r,fill:'url(#gl)'},g); }
+  el('path',{d:'M197 213 L197 203 Q209 188 221 203 L221 213 Z',style:`fill:${on ? lc : '#D7DCE3'};stroke:var(--muted);stroke-width:1`},g);
+  // spring
+  const sTop = 232 + d, sBot = 320, nz = 7; let p = `M260 ${sTop}`;
+  for (let k=1;k<=nz;k++){ const y = sTop + (sBot - sTop)*k/nz; p += ` L${k%2 ? 276 : 244} ${y - (sBot-sTop)/(2*nz)} L260 ${y}`; }
+  el('path',{d:p,style:'fill:none;stroke:var(--muted);stroke-width:2'},g);
+  // stem (blue cross) and click jacket
+  el('rect',{x:244,y:120+d,width:32,height:112,rx:3,style:'fill:#4DA3F0;stroke:#2A6FB8;stroke-width:1.5'},g);
+  el('rect',{x:232,y:120+d,width:56,height:14,rx:2,style:'fill:#4DA3F0;stroke:#2A6FB8;stroke-width:1.5'},g);
+  el('rect',{x:228,y:206+jOff*0.5,width:12,height:24,rx:2,style:'fill:#2A6FB8'},g);
+  el('rect',{x:282,y:206+jOff*0.5,width:12,height:24,rx:2,style:'fill:#2A6FB8'},g);
+  // keycap
+  const ky = 60 + d;
+  const cap = el('path',{d:`M176 ${ky} L344 ${ky} L366 ${ky+62} L154 ${ky+62} Z`,style:'fill:color-mix(in srgb,var(--paper) 60%,transparent);stroke:var(--muted);stroke-width:1.5;cursor:pointer'},g);
+  el('rect',{x:186,y:ky+4,width:148,height:22,rx:4,style:'fill:var(--cap);opacity:.9;pointer-events:none'},g);
+  cap.addEventListener('pointerdown', e => { e.preventDefault(); press(true); try { cap.setPointerCapture(e.pointerId); } catch (_) {} });
+  cap.addEventListener('pointerup', () => press(false)); cap.addEventListener('pointercancel', () => press(false));
+  // labels
+  const lab = (x, y, tx, ty, t, anchor='start', c='var(--muted)') => { el('line',{x1:x,y1:y,x2:tx,y2:ty,style:`stroke:${c};stroke-width:1`},g); el('text',{x:tx + (anchor==='start'?4:-4),y:ty+4,'font-size':13,'text-anchor':anchor,style:`fill:${c}`},g,t); };
+  lab(344, ky+10, 440, ky+6, T.lbCap); lab(276, 150+d, 440, 150, T.lbStem); lab(294, 216+jOff*0.5, 440, 206, T.lbJacket);
+  lab(272, 296, 440, 250, T.lbSpring); lab(330, 290, 440, 274, T.lbLeaf); lab(198, 203, 80, 180, T.lbLed, 'end');
+  lab(302, 332, 440, 298, T.lbHook); lab(118, 370, 80, 300, T.lbPin1, 'end'); lab(342, 326, 440, 320, T.lbPin2); lab(344, 338, 440, 342, T.lbFix, 'start', 'var(--green)');
+  lab(338, 345, 440, 364, T.lbNeg); lab(368, 378, 440, 394, T.lbPos);
+  el('text',{x:260,y:446,'font-size':13,'text-anchor':'middle',style:'fill:var(--muted)'},g,T.lbCell);
+}
+
+/* ---------- plots ---------- */
+function frame(svg, o){
+  clear(svg); const vb = svg.viewBox.baseVal, W = vb.width, H = vb.height, m = {l:56, r:16, t:14, b:44};
+  const X = v => m.l + (v - o.x0)/(o.x1 - o.x0)*(W - m.l - m.r), Y = v => H - m.b - (v - o.y0)/(o.y1 - o.y0)*(H - m.t - m.b);
+  const g = el('g', {}, svg);
+  o.xt.forEach(t => { el('line',{x1:X(t),x2:X(t),y1:m.t,y2:H-m.b,class:'gridl'},g); el('text',{x:X(t),y:H-m.b+16,'font-size':12,'text-anchor':'middle',style:'fill:var(--muted)'},g,String(t)); });
+  o.yt.forEach(t => { el('line',{x1:m.l,x2:W-m.r,y1:Y(t),y2:Y(t),class:'gridl'},g); el('text',{x:m.l-7,y:Y(t)+4,'font-size':12,'text-anchor':'end',style:'fill:var(--muted)'},g,String(t)); });
+  el('line',{x1:m.l,x2:W-m.r,y1:H-m.b,y2:H-m.b,class:'axis'},g); el('line',{x1:m.l,x2:m.l,y1:m.t,y2:H-m.b,class:'axis'},g);
+  el('text',{x:(m.l+W-m.r)/2,y:H-8,'font-size':13,'text-anchor':'middle'},g,o.xl);
+  el('text',{x:14,y:(m.t+H-m.b)/2,'font-size':13,'text-anchor':'middle',transform:`rotate(-90 14 ${(m.t+H-m.b)/2})`},g,o.yl);
+  const cp = el('clipPath',{id:svg.id+'c'}, el('defs',{},svg)); el('rect',{x:m.l,y:m.t,width:W-m.l-m.r,height:H-m.t-m.b},cp);
+  const gc = el('g',{'clip-path':`url(#${svg.id}c)`}, svg);
+  const line = (pts, style) => el('path',{d:pts.map((p,i)=>(i?'L':'M')+X(p[0]).toFixed(1)+','+Y(p[1]).toFixed(1)).join(''),style:'fill:none;'+style},gc);
+  return {X, Y, g:gc, line};
+}
+const ticks = (a, b, step) => { const o = []; for (let t = a; t <= b + 1e-9; t += step) o.push(+t.toFixed(4)); return o; };
+const R = (a, b, n=300) => Array.from({length:n+1}, (_,i)=>a + (b-a)*i/n);
+
+function drawSchem(){
+  const s = $('schemSvg'); clear(s); const g = el('g', {}, s);
+  const on = lit(), i = iShown(), lc = ledColor();
+  // loop
+  el('path',{d:'M90 60 L470 60 L470 200 L90 200 Z',class:'wire'},g);
+  if (on) el('path',{d:'M90 60 L470 60 L470 200 L90 200 Z',class:'flow',style:`animation:dash ${Math.max(0.3, 2.2 - i*150)}s linear infinite`},g);
+  // cell with internal resistance (left side)
+  el('rect',{x:40,y:80,width:100,height:100,rx:8,style:'fill:var(--panel);stroke:var(--muted);stroke-width:1.5;stroke-dasharray:5 4'},g);
+  el('line',{x1:70,y1:112,x2:110,y2:112,style:'stroke:var(--ink);stroke-width:3'},g); el('line',{x1:80,y1:124,x2:100,y2:124,style:'stroke:var(--ink);stroke-width:5'},g);
+  el('line',{x1:90,y1:80,x2:90,y2:112,class:'wire'},g); el('line',{x1:90,y1:124,x2:90,y2:140,class:'wire'},g);
+  el('path',{d:'M90 140 l-8 4 l16 6 l-16 6 l16 6 l-8 4 L90 180',class:'wire'},g);
+  el('text',{x:118,y:122,'font-size':16,style:'font-family:var(--math)'},g,'ℰ'); el('text',{x:104,y:160,'font-size':16,'font-style':'italic',style:'font-family:var(--math)'},g,'r');
+  el('text',{x:90,y:216,'font-size':13,'text-anchor':'middle',style:'fill:var(--muted)'},g,T.sCell);
+  el('text',{x:60,y:110,'font-size':13},g,'+');
+  el('line',{x1:90,y1:60,x2:90,y2:80,class:'wire'},g); el('line',{x1:90,y1:180,x2:90,y2:200,class:'wire'},g);
+  // switch (top)
+  el('rect',{x:240,y:52,width:80,height:16,style:'fill:var(--panel);stroke:none'},g);
+  el('circle',{cx:244,cy:60,r:4,style:'fill:var(--ink)'},g); el('circle',{cx:316,cy:60,r:4,style:'fill:var(--ink)'},g);
+  el('line',{x1:244,y1:60,x2:S.contact ? 316 : 308,y2:S.contact ? 60 : 36,style:'stroke:var(--ink);stroke-width:3;stroke-linecap:round'},g);
+  el('text',{x:280,y:92,'font-size':13,'text-anchor':'middle',style:'fill:var(--muted)'},g,T.sSwitch);
+  // LED (right side, pointing down: anode top)
+  el('rect',{x:458,y:110,width:24,height:44,style:'fill:var(--panel)'},g);
+  el('path',{d:'M454 116 L486 116 L470 144 Z',style:`fill:${on ? lc : 'var(--panel)'};stroke:var(--ink);stroke-width:2`},g);
+  el('line',{x1:454,y1:146,x2:486,y2:146,style:'stroke:var(--ink);stroke-width:2.5'},g);
+  el('line',{x1:470,y1:110,x2:470,y2:116,class:'wire'},g); el('line',{x1:470,y1:146,x2:470,y2:154,class:'wire'},g);
+  [[492,118],[498,130]].forEach(([a,b]) => el('path',{d:`M${a} ${b} l14 -10 m-6 0 l6 0 l0 6`,style:`fill:none;stroke:${on ? lc : 'var(--muted)'};stroke-width:1.8`},g));
+  el('text',{x:430,y:136,'font-size':13,'text-anchor':'end',style:'fill:var(--muted)'},g,T.sLed);
+  el('text',{x:280,y:226,'font-size':14,'text-anchor':'middle'},g, on ? `i = ${(i*1000).toFixed(2)} mA` : (S.contact ? T.noPins : T.swOpen));
+}
+function drawIV(){
+  const c = col(), E = S.E, r = S.r, i = iNow();
+  const ymax = Math.max(10, Math.ceil(i*1000*2.2/5)*5);
+  const P = frame($('ivSvg'), {x0:1.5, x1:3.4, y0:0, y1:ymax, xt:ticks(1.5,3.4,0.25).filter((t,i)=>i%2===0), yt:ticks(0,ymax,ymax>20?10:2), xl:T.vlab, yl:T.ilab});
+  const pts = []; for (let k=0;k<=400;k++){ const ii = (ymax*1.2/1000)*k/400; pts.push([vLed(c, ii), ii*1000]); }
+  P.line(pts, `stroke:${c.col === '#E8F0FF' ? 'var(--muted)' : c.col};stroke-width:3`);
+  P.line([[0, E/r*1000],[E, 0]], 'stroke:var(--red);stroke-width:2.2;stroke-dasharray:7 4');
+  el('line',{x1:P.X(E),x2:P.X(E),y1:P.Y(0),y2:P.Y(ymax),style:'stroke:var(--muted);stroke-width:1;stroke-dasharray:2 4'},P.g);
+  el('text',{x:P.X(E)-4,y:P.Y(ymax*0.94),'font-size':12,'text-anchor':'end',style:'fill:var(--muted)'},P.g,'ℰ').style.fontFamily = 'var(--math)';
+  const v = vLed(c, i);
+  el('circle',{cx:P.X(v),cy:P.Y(i*1000),r:7,style:'fill:var(--ink);stroke:var(--panel);stroke-width:2'},P.g);
+  $('eOut').textContent = E.toFixed(2) + T.V; $('rOut').textContent = r.toFixed(0) + T.ohm;
+  $('opI').textContent = (i*1000).toFixed(2) + T.mA; $('opV').textContent = v.toFixed(3) + T.V; $('opVr').textContent = (i*r).toFixed(3) + T.V;
+  $('opP').textContent = (i*v*1000).toFixed(2) + T.mW; $('opPr').textContent = (i*i*r*1000).toFixed(2) + T.mW;
+  $('opLife').textContent = i > 1e-6 ? (LANG === 'ko' ? `약 ${(CAP/i).toFixed(1)}시간` : `about ${(CAP/i).toFixed(1)} h`) : '—';
+}
+function drawColors(){
+  const P = frame($('colorSvg'), {x0:2, x1:3.3, y0:0, y1:40, xt:ticks(2,3.3,0.1).filter((t,i)=>i%2===0), yt:ticks(0,40,10), xl:T.elab, yl:T.ilab});
+  COLORS.forEach(c => P.line(R(2, 3.3, 130).map(E => [E, opPoint(c, E, S.r)*1000]), `stroke:${c.k === 'white' ? 'var(--muted)' : c.col};stroke-width:${c.k === S.color ? 3.6 : 2.2}${c.k === 'white' ? ';stroke-dasharray:6 3' : ''}`));
+  el('line',{x1:P.X(S.E),x2:P.X(S.E),y1:P.Y(0),y2:P.Y(40),style:'stroke:var(--ink);stroke-width:1.4;stroke-dasharray:4 3'},P.g);
+  $('colorLegend').innerHTML = COLORS.map(c => `<span><span class="sw${c.k==='white'?' d':''}" style="border-color:${c.k==='white'?'var(--muted)':c.col}"></span>${T.colors[c.k]}</span>`).join('');
+  $('colorRows').innerHTML = COLORS.map(c => `<tr${c.k===S.color?' style="font-weight:700"':''}><td>${T.colors[c.k]}</td><td>${c.vf.toFixed(2)} V</td><td>${(opPoint(c, S.E, S.r)*1000).toFixed(2)} mA</td></tr>`).join('');
+}
+function drawPins(){
+  const s = $('pinSvg'); clear(s); const g = el('g', {}, s);
+  const ok = pinsOK(), on = ok && S.contact, lc = col().col;
+  // coin cell, side view, − face up
+  el('rect',{x:150,y:184,width:260,height:36,rx:6,style:'fill:var(--silver);stroke:var(--muted);stroke-width:1.5'},g);
+  el('rect',{x:185,y:176,width:190,height:9,rx:2,style:'fill:#3A3F48'},g);
+  el('rect',{x:202,y:170,width:156,height:7,rx:2,style:'fill:var(--silver);stroke:var(--muted);stroke-width:1'},g);
+  el('text',{x:164,y:208,'font-size':16,'font-weight':700,style:'fill:#1A2433'},g,'+');
+  el('text',{x:214,y:166,'font-size':16,'font-weight':700,style:'fill:var(--ink)'},g,'−');
+  el('text',{x:420,y:178,'font-size':12.5,style:'fill:var(--muted)'},g,T.lbNeg);
+  el('text',{x:420,y:214,'font-size':12.5,style:'fill:var(--muted)'},g,T.lbPos);
+  el('text',{x:280,y:292,'font-size':13,'text-anchor':'middle',style:'fill:var(--muted)'},g,T.lbCell);
+  // switch + LED module: left lead = LED anode leg, right lead = switch pin B
+  el('rect',{x:210,y:20,width:150,height:110,rx:10,style:'fill:var(--panel);stroke:var(--line);stroke-width:1.5'},g);
+  el('text',{x:285,y:40,'font-size':12.5,'text-anchor':'middle',style:'fill:var(--muted)'},g,T.sSwitch+' + '+T.sLed);
+  el('path',{d:'M320 130 L320 112',class:'wire'},g); el('circle',{cx:320,cy:112,r:3.5,style:'fill:var(--ink)'},g);
+  el('line',{x1:320,y1:112,x2:S.contact ? 320 : 336,y2:S.contact ? 76 : 82,style:'stroke:var(--ink);stroke-width:3;stroke-linecap:round'},g);
+  el('circle',{cx:320,cy:76,r:3.5,style:'fill:var(--ink)'},g);
+  el('path',{d:'M320 76 L320 56 L250 56 L250 68',class:'wire'},g);
+  el('line',{x1:234,y1:68,x2:266,y2:68,style:'stroke:var(--ink);stroke-width:2.5'},g);
+  el('path',{d:'M234 94 L266 94 L250 70 Z',style:`fill:${on ? lc : 'var(--panel)'};stroke:var(--ink);stroke-width:2`},g);
+  el('path',{d:'M250 94 L250 104 L210 104',class:'wire'},g);
+  if (on) [[270,72],[276,84]].forEach(([a,b]) => el('path',{d:`M${a} ${b} l14 -10 m-6 0 l6 0 l0 6`,style:`fill:none;stroke:${lc};stroke-width:1.8`},g));
+  // leads
+  const p1 = {pos:'M210 104 L120 104 L120 256 L290 256 L290 220', neg:'M210 104 L120 104 L120 150 L230 150 L230 170', none:'M210 104 L120 104 L120 150'}[S.pin1];
+  const p2 = {neg:'M320 130 L320 170', pos:'M320 130 L320 150 L450 150 L450 266 L330 266 L330 220', none:'M320 130 L320 142 L342 156'}[S.pin2];
+  el('path',{d:p1,style:'fill:none;stroke:var(--leaf);stroke-width:3;stroke-linejoin:round'},g);
+  el('path',{d:p2,style:'fill:none;stroke:var(--leaf);stroke-width:3;stroke-linejoin:round'},g);
+  if (S.pin1 === 'none') el('circle',{cx:120,cy:150,r:4,style:'fill:var(--panel);stroke:var(--leaf);stroke-width:2'},g);
+  if (S.pin2 === 'none') el('circle',{cx:342,cy:156,r:4,style:'fill:var(--panel);stroke:var(--leaf);stroke-width:2'},g);
+  el('text',{x:110,y:96,'font-size':12.5,'text-anchor':'end',style:'fill:var(--muted)'},g,T.lbPin1);
+  el('text',{x:330,y:146,'font-size':12.5,style:'fill:var(--muted)'},g,T.lbPin2);
+  el('circle',{cx:320,cy:158,r:14,style:`fill:none;stroke:var(--green);stroke-width:2;stroke-dasharray:4 3;opacity:${ok ? 1 : 0.5}`},g);
+  el('text',{x:302,y:150,'font-size':12.5,'text-anchor':'end',style:'fill:var(--green)'},g,T.lbFix);
+  let v;
+  if (S.pin1 === 'none' || S.pin2 === 'none') v = T.vOpen;
+  else if (S.pin1 === S.pin2) v = T.vSame;
+  else if (ok) v = T.vOk; else v = T.vRev;
+  const vd = $('pinVerdict'); vd.innerHTML = v; vd.classList.toggle('ok', ok);
+}
+
+/* ---------- color-cycling RGB LED ---------- */
+const DIES = ['red','green','blue'].map(k => COLORS.find(c => c.k === k));
+const clamp01 = v => Math.max(0, Math.min(1, v));
+const dutiesAt = h => [clamp01(Math.abs(h - 3) - 1), clamp01(2 - Math.abs(h - 2)), clamp01(2 - Math.abs(h - 4))];
+const HUES = ['red','yellow','green','cyan','blue','magenta'];
+function cyc(){
+  const t = S.tOn === null ? 0 : (performance.now() - S.tOn)/1000;
+  const h = ((t / S.period) % 1) * 6;
+  const d = dutiesAt(h), ik = DIES.map(c => opPoint(c, S.E, S.r));
+  const b = ik.map(i => Math.sqrt(clamp01(i/0.006)));
+  const ch = d.map((v, k) => Math.round(255*v*(0.25 + 0.75*b[k])));
+  return {t, h, d, ik, iavg: d.reduce((a, v, k) => a + v*ik[k], 0), css:`rgb(${ch[0]},${ch[1]},${ch[2]})`, name:HUES[Math.round(h) % 6]};
+}
+const ledColor = () => S.cycle ? cyc().css : col().col;
+const iShown = () => S.cycle ? cyc().iavg : iNow();
+function drawRGB(){
+  const s = $('rgbSvg'); clear(s); const g = el('g', {}, s);
+  const on = lit() && S.cycle, C = cyc(), mix = h => { const d = dutiesAt(h); return `rgb(${d.map(v => Math.round(255*v)).join(',')})`; };
+  // LED dome with three chips and the control chip
+  if (on){ const gr = el('radialGradient',{id:'rgbgl'}, el('defs',{},g)); el('stop',{offset:'0%','stop-color':C.css,'stop-opacity':0.9},gr); el('stop',{offset:'100%','stop-color':C.css,'stop-opacity':0},gr);
+    el('circle',{cx:120,cy:186,r:96,fill:'url(#rgbgl)'},g); }
+  el('path',{d:'M78 262 L78 160 A42 42 0 0 1 162 160 L162 262 Z',style:'fill:color-mix(in srgb,var(--panel) 70%,transparent);stroke:var(--muted);stroke-width:1.5'},g);
+  el('rect',{x:72,y:262,width:96,height:8,rx:2,style:'fill:none;stroke:var(--muted);stroke-width:1.5'},g);
+  el('line',{x1:100,y1:270,x2:100,y2:310,style:'stroke:var(--leaf);stroke-width:3'},g); el('line',{x1:140,y1:270,x2:140,y2:310,style:'stroke:var(--leaf);stroke-width:3'},g);
+  el('text',{x:100,y:306,'font-size':11,'text-anchor':'end',dx:-6,style:'fill:var(--muted)'},g,'+'); el('text',{x:140,y:306,'font-size':11,dx:6,style:'fill:var(--muted)'},g,'−');
+  DIES.forEach((c, k) => { const x = 90 + k*22, lv = on ? C.d[k]*(0.3 + 0.7*Math.sqrt(clamp01(C.ik[k]/0.006))) : 0;
+    el('rect',{x,y:200,width:16,height:16,rx:2,style:`fill:${lv > 0.02 ? c.col : '#C9CED6'};opacity:${lv > 0.02 ? 0.35 + 0.65*lv : 1};stroke:var(--muted);stroke-width:1`},g);
+    el('text',{x:x+8,y:232,'font-size':11,'text-anchor':'middle',style:'fill:var(--muted)'},g,'RGB'[k]); });
+  el('rect',{x:104,y:240,width:32,height:16,rx:2,style:'fill:#232833'},g);
+  el('text',{x:120,y:252,'font-size':9,'text-anchor':'middle',style:'fill:#fff'},g,'IC');
+  el('line',{x1:136,y1:248,x2:178,y2:272,style:'stroke:var(--muted);stroke-width:1'},g);
+  el('text',{x:180,y:282,'font-size':12,style:'fill:var(--muted)'},g,T.lbIC);
+  // one color cycle: strip and duty cycles
+  const X0 = 236, X1 = 544, PX = h => X0 + (X1 - X0)*h/6;
+  el('text',{x:X0,y:28,'font-size':12.5,style:'fill:var(--muted)'},g,T.lbCycle + ` (T = ${S.period.toFixed(1)} ${LANG === 'ko' ? '초' : 's'})`);
+  for (let k=0;k<72;k++){ const h = 6*k/72; el('rect',{x:PX(h),y:36,width:(X1-X0)/72+0.6,height:24,style:`fill:${mix(h + 3/72)}`},g); }
+  el('rect',{x:X0,y:36,width:X1-X0,height:24,style:'fill:none;stroke:var(--line);stroke-width:1'},g);
+  const Y0 = 160, Y1 = 78, Yd = v => Y0 - (Y0 - Y1)*v;
+  el('line',{x1:X0,x2:X1,y1:Y0,y2:Y0,class:'axis'},g); el('line',{x1:X0,x2:X0,y1:Y1,y2:Y0,class:'axis'},g);
+  el('text',{x:X0-6,y:Yd(1)+4,'font-size':11,'text-anchor':'end',style:'fill:var(--muted)'},g,'100%'); el('text',{x:X0-6,y:Y0+4,'font-size':11,'text-anchor':'end',style:'fill:var(--muted)'},g,'0');
+  el('text',{x:(X0+X1)/2,y:Y0+16,'font-size':12,'text-anchor':'middle',style:'fill:var(--muted)'},g,T.lbDuty);
+  DIES.forEach((c, k) => { const pts = []; for (let j=0;j<=120;j++){ const h = 6*j/120; pts.push([PX(h), Yd(dutiesAt(h)[k]) + (k-1)*1.5]); }
+    el('path',{d:pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(''),style:`fill:none;stroke:${c.col};stroke-width:2.4`},g); });
+  if (on) el('line',{x1:PX(C.h),x2:PX(C.h),y1:32,y2:Y0,style:'stroke:var(--ink);stroke-width:2'},g);
+  // PWM pulses for the present duty cycles, three periods, slowed down
+  const P0 = 216, rowH = 28;
+  if (S.pwm){
+    el('text',{x:X0,y:P0-6,'font-size':12,style:'fill:var(--muted)'},g,T.lbPWM);
+    DIES.forEach((c, k) => { const y = P0 + 8 + k*rowH, d = on ? C.d[k] : 0, w = (X1 - X0)/3; let p = `M${X0} ${y+18}`;
+      for (let n=0;n<3;n++){ const x = X0 + n*w; if (d > 0.001){ p += ` L${x} ${y+18} L${x} ${y} L${x + w*d} ${y} L${x + w*d} ${y+18}`; } p += ` L${x + w} ${y+18}`; }
+      el('path',{d:p,style:`fill:none;stroke:${c.col};stroke-width:2`},g);
+      el('text',{x:X0-6,y:y+14,'font-size':11,'text-anchor':'end',style:'fill:var(--muted)'},g,'RGB'[k]); });
+  } else el('text',{x:X0,y:P0+30,'font-size':12.5,style:'fill:var(--muted)'},g,T.lbPWMoff);
+  // I–V view of the three chips on the battery's load line
+  const ymax = Math.max(10, Math.ceil(Math.max(...C.ik)*1000*1.3/5)*5);
+  const Q = frame($('rgbIV'), {x0:1.5, x1:3.4, y0:0, y1:ymax, xt:ticks(1.5,3.4,0.25).filter((t,i)=>i%2===0), yt:ticks(0,ymax,ymax>20?10:2), xl:T.vlab, yl:T.ilab});
+  DIES.forEach(c => { const pts = []; for (let k=0;k<=300;k++){ const ii = (ymax*1.2/1000)*k/300; pts.push([vLed(c, ii), ii*1000]); } Q.line(pts, `stroke:${c.col};stroke-width:2.6`); });
+  Q.line([[0, S.E/S.r*1000],[S.E, 0]], 'stroke:var(--ink);stroke-width:2;stroke-dasharray:7 4');
+  DIES.forEach((c, k) => { const op = on ? 0.15 + 0.85*C.d[k] : 0.25;
+    el('circle',{cx:Q.X(vLed(c, C.ik[k])),cy:Q.Y(C.ik[k]*1000),r:7,style:`fill:${c.col};stroke:var(--ink);stroke-width:1.5;opacity:${op}`},Q.g); });
+  // readouts
+  $('cycPeriodOut').textContent = S.period.toFixed(1) + (LANG === 'ko' ? '초' : ' s');
+  $('rgbName').textContent = on ? T.colors[C.name] : '—';
+  $('rgbDuty').textContent = on ? C.d.map(v => Math.round(v*100) + '%').join(' · ') : '—';
+  $('rgbAvg').textContent = on ? (C.iavg*1000).toFixed(2) + T.mA : '0.00' + T.mA;
+  $('rgbDies').textContent = C.ik.map(i => (i*1000).toFixed(1)).join(' · ') + T.mA;
+  $('rgbTime').textContent = on ? C.t.toFixed(1) + (LANG === 'ko' ? '초' : ' s') : '—';
+}
+let cycRaf = null;
+function cycLoop(){
+  if (S.cycle && lit()){ drawCut(); drawSchem(); drawRGB(); readouts(); cycRaf = requestAnimationFrame(cycLoop); }
+  else { cycRaf = null; drawRGB(); }
+}
+function startCyc(){ if (!cycRaf && S.cycle && lit()) cycRaf = requestAnimationFrame(cycLoop); }
+
+function readouts(){
+  $('xSl').value = S.x; $('xOut').textContent = S.x.toFixed(2) + T.mm;
+  const pressing = S.target > S.x || (S.target === S.x && S.target > 0);
+  $('jOut').textContent = S.jacketDown ? T.jDown : T.jUp;
+  $('cOut').textContent = S.contact ? T.closed : T.open;
+  $('iOut').textContent = (lit() ? iShown()*1000 : 0).toFixed(2) + T.mA;
+  const cs = $('contactState'); cs.classList.toggle('on', lit()); cs.querySelector('x').textContent = S.contact ? T.contactClosed : T.contactOpen;
+  $('pressBtn').setAttribute('aria-pressed', S.target > 0 ? 'true' : 'false'); $('pressBtn2').setAttribute('aria-pressed', S.target > 0 ? 'true' : 'false');
+}
+function drawAll(){ drawCut(); drawSchem(); drawIV(); drawColors(); drawPins(); drawRGB(); readouts(); }
+
+/* ---------- mechanics of pressing ---------- */
+function updateMech(prev){
+  if (S.x >= XCLICK && prev < XCLICK && !S.jacketDown){ S.jacketDown = true; clickSound(1); }
+  if (S.x < 0.6 && S.jacketDown){ S.jacketDown = false; clickSound(0.35); }
+  if (!S.contact && S.x >= XACT){ S.contact = true; S.tOn = performance.now(); startCyc(); }
+  if (S.contact && S.x < XREL){ S.contact = false; S.tOn = null; drawRGB(); }
+}
+let raf = null, last = 0;
+function tick(t){
+  const dt = Math.min(0.05, (t - last)/1000 || 0); last = t;
+  const v = S.slow ? 3 : 45, prev = S.x;
+  if (S.x < S.target) S.x = Math.min(S.target, S.x + v*dt); else if (S.x > S.target) S.x = Math.max(S.target, S.x - v*dt);
+  updateMech(prev); drawCut(); drawSchem(); drawPins(); readouts();
+  if (S.x !== S.target) raf = requestAnimationFrame(tick); else raf = null;
+}
+function press(down){ S.target = down ? XMAX : 0; if (!raf){ last = performance.now(); raf = requestAnimationFrame(tick); } }
+const pb = $('pressBtn');
+pb.addEventListener('pointerdown', e => { e.preventDefault(); press(true); try { pb.setPointerCapture(e.pointerId); } catch (_) {} });
+pb.addEventListener('pointerup', () => press(false)); pb.addEventListener('pointercancel', () => press(false));
+pb.addEventListener('keydown', e => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat){ e.preventDefault(); press(true); } });
+pb.addEventListener('keyup', e => { if (e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); press(false); } });
+document.addEventListener('keydown', e => { if (e.key === ' ' && !e.repeat && e.target === document.body){ e.preventDefault(); press(true); } });
+document.addEventListener('keyup', e => { if (e.key === ' ' && e.target === document.body){ e.preventDefault(); press(false); } });
+$('xSl').addEventListener('input', e => { const prev = S.x; S.x = S.target = +e.target.value; updateMech(prev); drawCut(); drawSchem(); drawPins(); readouts(); });
+$('slowCk').addEventListener('change', e => S.slow = e.target.checked);
+const pb2 = $('pressBtn2');
+pb2.addEventListener('pointerdown', e => { e.preventDefault(); press(true); try { pb2.setPointerCapture(e.pointerId); } catch (_) {} });
+pb2.addEventListener('pointerup', () => press(false)); pb2.addEventListener('pointercancel', () => press(false));
+pb2.addEventListener('keydown', e => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat){ e.preventDefault(); press(true); } });
+pb2.addEventListener('keyup', e => { if (e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); press(false); } });
+$('cycCk').addEventListener('change', e => { S.cycle = e.target.checked; drawAll(); startCyc(); });
+$('cycSl').addEventListener('input', e => { S.period = +e.target.value; drawRGB(); });
+$('pwmCk').addEventListener('change', e => { S.pwm = e.target.checked; drawRGB(); });
+$('soundCk').addEventListener('change', e => S.sound = e.target.checked);
+$('eSl').addEventListener('input', e => { S.E = +e.target.value; drawAll(); });
+$('rSl').addEventListener('input', e => { S.r = +e.target.value; drawAll(); });
+$('colorSeg').innerHTML = COLORS.map(c => `<button type="button" data-k="${c.k}" aria-pressed="${c.k===S.color}">${T.colors[c.k]}</button>`).join('');
+$('colorSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; S.color = b.dataset.k; [...$('colorSeg').children].forEach(x => x.setAttribute('aria-pressed', x === b)); drawAll(); });
+const pinSeg = (id, key, opts) => { $(id).innerHTML = opts.map(([k,t]) => `<button type="button" data-k="${k}" aria-pressed="${S[key]===k}">${T[t]}</button>`).join('');
+  $(id).addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; S[key] = b.dataset.k; [...$(id).children].forEach(x => x.setAttribute('aria-pressed', x === b)); drawAll(); }); };
+const OPTS = [['neg','tNeg'],['pos','tPos'],['none','tNone']];
+pinSeg('pin1Seg', 'pin1', OPTS); pinSeg('pin2Seg', 'pin2', OPTS);
+$('pinReset').addEventListener('click', () => { S.pin1 = 'pos'; S.pin2 = 'neg'; pinSeg('pin1Seg','pin1',OPTS); pinSeg('pin2Seg','pin2',OPTS); drawAll(); });
+const st = document.createElement('style'); st.textContent = '@keyframes dash{to{stroke-dashoffset:-15.1}} @media (prefers-reduced-motion:reduce){svg .flow{animation:none!important}}'; document.head.appendChild(st);
+new MutationObserver(drawAll).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
+drawAll();
+
+/* ---------- light/dark switch (shared with the other course demos) ---------- */
+const btn = $('themeBtn'), root = document.documentElement, mq = matchMedia('(prefers-color-scheme: dark)');
+const SUN = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>';
+const MOON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"/></svg>';
+const current = () => root.dataset.theme || (mq.matches ? 'dark' : 'light');
+const sync = () => { const dark = current() === 'dark', label = dark ? T.themeLight : T.themeDark; btn.innerHTML = dark ? SUN : MOON; btn.setAttribute('aria-label', label); btn.title = label; };
+btn.addEventListener('click', () => { const next = current() === 'dark' ? 'light' : 'dark'; root.dataset.theme = next; try { localStorage.setItem('netsci-theme', next); } catch (e) {} sync(); });
+mq.addEventListener('change', () => { sync(); drawAll(); });
+sync();
+})();
+</script>
+</body>
+</html>
